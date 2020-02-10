@@ -8,7 +8,7 @@ import openpyxl as openpyxl
 class MeasureResult:
 
     def __init__(self):
-        self.headers = ['F', 'P', 'K']
+        self.headers = []
         self._raw_data = list()
 
     def init(self):

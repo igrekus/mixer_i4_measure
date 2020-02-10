@@ -68,7 +68,16 @@ class InstrumentController(QObject):
 
     def _runCheck(self, param, secondary):
         print(f'run check with {param}, {secondary}')
-        return True
+
+        level = -20
+        ini = 'settings.ini'
+        if isfile(ini):
+            with open(ini, mode='rt', encoding='utf-7') as f:
+                level = int(f.readlines()[0].split('=')[1])
+
+        read_pow = -10
+
+        return read_pow > level
 
     def measure(self, params):
         print(params)

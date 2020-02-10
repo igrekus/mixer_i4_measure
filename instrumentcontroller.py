@@ -14,7 +14,7 @@ class InstrumentController(QObject):
         }
 
         self.deviceParams = {
-            'Прибор 1': {
+            'Тип 1': {
                 'F': [1.15, 1.35, 1.75, 1.92, 2.25, 2.54, 2.7, 3, 3.47, 3.86, 4.25],
                 'mul': 2,
                 'P1': 15,
@@ -75,7 +75,7 @@ class InstrumentController(QObject):
         print(f'call measure with {params}')
         device, secondary = params
         self._measure(device, secondary)
-        self.result._raw_data = [1, 2, 3]
+        self.result.raw_data = [device]
 
     def _measure(self, device, secondary):
         param = self.deviceParams[device]

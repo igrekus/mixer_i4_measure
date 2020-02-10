@@ -53,9 +53,8 @@ class MainWindow(QMainWindow):
         self.resizeTable()
 
     def resizeTable(self):
-        pass
-        # self._ui.tableMeasure.resizeRowsToContents()
-        # self._ui.tableMeasure.resizeColumnsToContents()
+        self._ui.tableMeasure.resizeRowsToContents()
+        self._ui.tableMeasure.resizeColumnsToContents()
 
     # event handlers
     def resizeEvent(self, event):
@@ -68,3 +67,4 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_measureComplete(self):
         print('meas complete')
+        self.refreshView()

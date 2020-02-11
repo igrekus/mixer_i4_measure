@@ -1,7 +1,7 @@
 from os.path import isfile
 from PyQt5.QtCore import QObject, pyqtSlot
 
-from instr.instrumentfactory import NetworkAnalyzerFactory
+from instr.instrumentfactory import SourceFactory, GeneratorFactory, AnalyzerFactory
 from measureresult import MeasureResult, MeasureResultMock
 
 
@@ -10,7 +10,10 @@ class InstrumentController(QObject):
         super().__init__(parent=parent)
 
         self.requiredInstruments = {
-            'Анализатор': NetworkAnalyzerFactory('GPIB0::9::INSTR'),
+            'Источник': SourceFactory('GPIB0::9::INSTR'),
+            'Генератор 1': GeneratorFactory('GPIB0::10::INSTR'),
+            'Генератор 2': GeneratorFactory('GPIB0::11::INSTR'),
+            'Анализатор': AnalyzerFactory('GPIB0::12::INSTR'),
         }
 
         self.deviceParams = {
@@ -43,6 +46,7 @@ class InstrumentController(QObject):
         self.result = MeasureResultMock()
         self.found = False
         self.present = False
+        self.span = 10
 
     def __str__(self):
         return f'{self._instruments}'
@@ -78,7 +82,33 @@ class InstrumentController(QObject):
             with open(ini, mode='rt', encoding='utf-7') as f:
                 level = int(f.readlines()[0].split('=')[1])
 
-        read_pow = -10
+        source = self._instruments['Источник']
+        gen1 = self._instruments['Генератор 1']
+        analyzer = self._instruments['Анализатор']
+
+        source.set_current(chan=1, value=500, unit='mA')
+        source.set_voltage_limit(chan=1, value=5, unit='V')
+        source.set_output(chan=1, state='ON')
+
+        f1 = secondary['F1']
+        gen1.set_modulation(state='OFF')
+        gen1.set_freq(value=f1, unit='GHz')
+        gen1.set_pow(value=0, unit='dBm')
+        gen1.set_output(state='ON')
+
+        analyzer.set_autocalibrate(state='OFF')
+        analyzer.set_span(value=self.span, unit='MHz')
+        analyzer.set_measure_center_freq(value=f1, unit='GHz')
+        analyzer.set_marker1_x_center(value=f1, unit='GHz')
+        analyzer.set_marker_mode(marker=1, mode='POS')
+        read_pow = analyzer.read_pow(marker=1)
+        analyzer.remove_marker(marker=1)
+
+        gen1.set_output(state='OFF')
+
+        source.set_output(chan=1, state='OFF')
+
+        # read_pow = -10
 
         return read_pow > level
 

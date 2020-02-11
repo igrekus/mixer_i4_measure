@@ -1,6 +1,6 @@
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QRunnable, QThreadPool
-from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QMessageBox, QDoubleSpinBox, QSpinBox
+from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QMessageBox, QDoubleSpinBox, QSpinBox, QCheckBox
 
 from deviceselectwidget import DeviceSelectWidget
 
@@ -126,46 +126,13 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
 
         self._params = 0
 
-        self._spinPowIn = QDoubleSpinBox(parent=self)
-        self._spinPowIn.setMinimum(-50)
-        self._spinPowIn.setMaximum(50)
-        self._spinPowIn.setSingleStep(1)
-        self._spinPowIn.setValue(-10)
-        self._spinPowIn.setSuffix(' дБм')
-        self._devices._layout.addRow('Pвх=', self._spinPowIn)
-
-        self._spinFreqStart = QDoubleSpinBox(parent=self)
-        self._spinFreqStart.setMinimum(0)
-        self._spinFreqStart.setMaximum(20)
-        self._spinFreqStart.setSingleStep(1)
-        self._spinFreqStart.setValue(2)
-        self._spinFreqStart.setSuffix(' ГГц')
-        self._devices._layout.addRow('F1=', self._spinFreqStart)
-
-        self._spinFreqEnd = QDoubleSpinBox(parent=self)
-        self._spinFreqEnd.setMinimum(0)
-        self._spinFreqEnd.setMaximum(20)
-        self._spinFreqEnd.setSingleStep(1)
-        self._spinFreqEnd.setValue(4)
-        self._spinFreqEnd.setSuffix(' ГГц')
-        self._devices._layout.addRow('F2=', self._spinFreqEnd)
-
-        self._spinState = QSpinBox(parent=self)
-        self._spinState.setMinimum(0)
-        self._spinState.setMaximum(63)
-        self._spinState.setSingleStep(1)
-        self._spinState.setValue(0)
-        self._spinState.setSuffix(' ГГц')
-        self._devices._layout.addRow('Состояние=', self._spinState)
+        self._checkOnlyImportant = QCheckBox(parent=self)
+        self._devices._layout.addRow('Только основные', self._checkOnlyImportant)
 
         self._connectSignals()
 
     def _connectSignals(self):
-        # self._spinFreq.valueChanged.connect(self.on_params_changed)
-        self._spinPowIn.valueChanged.connect(self.on_params_changed)
-        self._spinFreqStart.valueChanged.connect(self.on_params_changed)
-        self._spinFreqEnd.valueChanged.connect(self.on_params_changed)
-        self._spinState.valueChanged.connect(self.on_params_changed)
+        self._checkOnlyImportant.toggled.connect(self.on_params_changed)
 
     def _modePreConnect(self):
         super()._modePreConnect()
@@ -203,9 +170,6 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
 
     def on_params_changed(self, value):
         params = {
-            'Pin': self._spinPowIn.value(),
-            'F1': self._spinFreqStart.value(),
-            'F2': self._spinFreqEnd.value(),
-            'State': self._spinState.value()
+            'important': self._checkOnlyImportant.isChecked(),
         }
         self.secondaryChanged.emit(params)

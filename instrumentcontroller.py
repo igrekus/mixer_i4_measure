@@ -29,10 +29,7 @@ class InstrumentController(QObject):
                 self.deviceParams = ast.literal_eval(raw)
 
         self.secondaryParams = {
-            'Pin': -10,
-            'F1': 4,
-            'F2': 8,
-            'State': 0
+            'important': False,
         }
 
         self._instruments = dict()
@@ -84,6 +81,7 @@ class InstrumentController(QObject):
         print(f'call measure with {params}')
         device, secondary = params
         self._measure(device, secondary)
+        self.result._only_important = self.secondaryParams['important']
         self.result.raw_data = [device]
 
     def _measure(self, device, secondary):

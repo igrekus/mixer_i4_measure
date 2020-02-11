@@ -51,6 +51,8 @@ class MeasureResultMock(MeasureResult):
     def __init__(self):
         super().__init__()
         self._gens = defaultdict(dict)
+        self._only_important = True
+        self._important_cols = (0, 1, 2, 3, 4, 9)
 
     def init(self):
         res = super().init()
@@ -86,7 +88,12 @@ class MeasureResultMock(MeasureResult):
     @raw_data.setter
     def raw_data(self, data):
         index = int(data[0][-2:])
-        self._raw_data = [gen_value(col) for col in self._gens[index].values()]
+        to_gen = list(range(10))
+        if self._only_important:
+            to_gen = list(sorted(set(to_gen).intersection(set(self._important_cols))))
+
+        self.headers = [self.headers[i] for i in to_gen]
+        self._raw_data = [gen_value(col) for i, col in enumerate(self._gens[index].values()) if i in to_gen]
 
 
 def gen_value(data):

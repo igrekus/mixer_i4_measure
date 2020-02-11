@@ -1,7 +1,8 @@
+import time
 from os.path import isfile
 from PyQt5.QtCore import QObject, pyqtSlot
 
-from instr.instrumentfactory import SourceFactory, GeneratorFactory, AnalyzerFactory
+from instr.instrumentfactory import SourceFactory, GeneratorFactory, AnalyzerFactory, mock_enabled
 from measureresult import MeasureResult, MeasureResultMock
 
 
@@ -90,7 +91,7 @@ class InstrumentController(QObject):
         source.set_voltage_limit(chan=1, value=5, unit='V')
         source.set_output(chan=1, state='ON')
 
-        f1 = secondary['F1']
+        f1 = param['F1']
         gen1.set_modulation(state='OFF')
         gen1.set_freq(value=f1, unit='GHz')
         gen1.set_pow(value=0, unit='dBm')
@@ -98,15 +99,16 @@ class InstrumentController(QObject):
 
         analyzer.set_autocalibrate(state='OFF')
         analyzer.set_span(value=self.span, unit='MHz')
+        analyzer.set_marker_mode(marker=1, mode='POS')
         analyzer.set_measure_center_freq(value=f1, unit='GHz')
         analyzer.set_marker1_x_center(value=f1, unit='GHz')
-        analyzer.set_marker_mode(marker=1, mode='POS')
         read_pow = analyzer.read_pow(marker=1)
+
         analyzer.remove_marker(marker=1)
-
         gen1.set_output(state='OFF')
-
+        gen1.set_modulation(state='ON')
         source.set_output(chan=1, state='OFF')
+        analyzer.set_autocalibrate(state='ON')
 
         # read_pow = -10
 
@@ -116,17 +118,156 @@ class InstrumentController(QObject):
         print(params)
         print(f'call measure with {params}')
         device, secondary = params
-        self._measure(device, secondary)
-        self.result._only_important = self.secondaryParams['important']
-        self.result.raw_data = [device]
+        res = self._measure(device, secondary)
+        if res:
+            self.result._only_important = self.secondaryParams['important']
+            self.result.raw_data = [device]
 
     def _measure(self, device, secondary):
         param = self.deviceParams[device]
+        dev_type = int(device[-2:])
         secondary = self.secondaryParams
         print(f'launch measure with {param} {secondary}')
 
-        pna = self._instruments['Анализатор']
-        pna.query('*OPC?')
+        source = self._instruments['Источник']
+        gen1 = self._instruments['Генератор 1']
+        gen2 = self._instruments['Генератор 2']
+        analyzer = self._instruments['Анализатор']
+
+        source.set_current(chan=1, value=500, unit='mA')
+        source.set_voltage_limit(chan=1, value=5, unit='V')
+        source.set_output(chan=1, state='ON')
+
+        if dev_type in (2, 4, 5, 6):
+            max_curr = 50   # TODO table 3 missing
+            curr = float(source.query('MEAS:CURR CH1'))
+            if curr >= max_curr:
+                source.set_output(chan=1, state='OFF')
+                print(f'supply current {curr} is bigger than max_current {max_curr}')
+                return None
+
+        analyzer.set_autocalibrate(state='OFF')
+        analyzer.set_span(value=self.span, unit='MHz')
+        analyzer.set_marker_mode(marker=1, mode='POS')
+
+        gen1.set_modulation(state='OFF')
+        gen1.set_output(state='ON')
+        gen2.set_modulation(state='OFF')
+        gen2.set_output(state='ON')
+
+        self._measure_important(param)
+        self._measure_unimportant(param)
+
+        analyzer.remove_marker(marker=1)
+        analyzer.set_autocalibrate(state='ON')
+        gen1.set_output(state='OFF')
+        gen2.set_output(state='OFF')
+        source.set_output(chan=1, state='OFF')
+
+        return [1]
+
+    def _measure_important(self, param):
+        print('measure important')
+        gen1 = self._instruments['Генератор 1']
+        gen2 = self._instruments['Генератор 2']
+        analyzer = self._instruments['Анализатор']
+
+        f1 = param['F1']
+        f3 = param['F3']
+        f4 = param['F4']
+        f6 = param['F6']
+        f7 = param['F7']
+        f8 = param['F8']
+        p1 = param['P1']
+        p2 = param['P2']
+
+        gen1.set_freq(value=f1, unit='GHz')
+        gen1.set_pow(value=p1, unit='dBm')
+        gen2.set_freq(value=f4, unit='GHz')
+        gen2.set_pow(value=p2, unit='dBm')
+
+        analyzer.set_measure_center_freq(value=f1, unit='GHz')
+        analyzer.set_marker1_x_center(value=f1, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        analyzer.set_measure_center_freq(value=f4, unit='GHz')
+        analyzer.set_marker1_x_center(value=f4, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        analyzer.set_measure_center_freq(value=f7, unit='GHz')
+        analyzer.set_marker1_x_center(value=f7, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        gen1.set_freq(value=f3, unit='GHz')
+        gen1.set_pow(value=p1, unit='dBm')
+        gen2.set_freq(value=f6, unit='GHz')
+        gen2.set_pow(value=p2, unit='dBm')
+
+        analyzer.set_measure_center_freq(value=f3, unit='GHz')
+        analyzer.set_marker1_x_center(value=f3, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        analyzer.set_measure_center_freq(value=f6, unit='GHz')
+        analyzer.set_marker1_x_center(value=f6, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        analyzer.set_measure_center_freq(value=f8, unit='GHz')
+        analyzer.set_marker1_x_center(value=f8, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+    def _measure_unimportant(self, param):
+        print('measure unimportant')
+        gen1 = self._instruments['Генератор 1']
+        gen2 = self._instruments['Генератор 2']
+        analyzer = self._instruments['Анализатор']
+
+        f1 = param['F1']
+        f2 = param['F2']
+        f3 = param['F3']
+        f4 = param['F4']
+        f5 = param['F5']
+        f6 = param['F6']
+        f7 = param['F7']
+        f8 = param['F8']
+        p1 = param['P1']
+        p2 = param['P2']
+
+        gen1.set_freq(value=f2, unit='GHz')
+        gen1.set_pow(value=p1, unit='dBm')
+        gen2.set_freq(value=f5, unit='GHz')
+        gen2.set_pow(value=p2, unit='dBm')
+
+        analyzer.set_measure_center_freq(value=f5, unit='GHz')
+        analyzer.set_marker1_x_center(value=f5, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        analyzer.set_measure_center_freq(value=f2, unit='GHz')
+        analyzer.set_marker1_x_center(value=f2, unit='GHz')
+        if not mock_enabled:
+            time.sleep(0.5)
+
+        gen1.set_freq(value=f2, unit='GHz')
+        gen2.set_freq(value=f5, unit='GHz')
+        gen1.set_pow(value=p1, unit='dBm')
+        gen2.set_pow(value=p2, unit='dBm')
+
+        # 5.	Прогон IIP3 по мощности (не важнейший параметры)
+        # 5.1.	генератор 1 – частота F2
+        # 5.2.	генератор 2 – частота F5
+        # 5.3.	генератор 2 – мощность (P1 - 30)
+        # 5.4.	генератор 2 – мощность (P1 - …) (повторить с шагом 2)
+        # 5.5.	генератор 2 – мощность (P1 – 2)
+        # 5.6.	генератор 2 – частота (F5 – 0,005)
+        # 5.7.	генератор 2 – мощность (P1 - 30)
+        # 5.8.	генератор 2 – мощность (P1 - …) (повторить с шагом 2)
+        # 5.9.	генератор 2 – мощность (P1 – 2)
 
     @pyqtSlot(dict)
     def on_secondary_changed(self, params):

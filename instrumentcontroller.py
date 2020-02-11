@@ -255,19 +255,16 @@ class InstrumentController(QObject):
 
         gen1.set_freq(value=f2, unit='GHz')
         gen2.set_freq(value=f5, unit='GHz')
-        gen1.set_pow(value=p1, unit='dBm')
+
+        gen2.set_pow(value=p2, unit='dBm')
+        gen2.set_pow(value=p2, unit='dBm')
         gen2.set_pow(value=p2, unit='dBm')
 
-        # 5.	Прогон IIP3 по мощности (не важнейший параметры)
-        # 5.1.	генератор 1 – частота F2
-        # 5.2.	генератор 2 – частота F5
-        # 5.3.	генератор 2 – мощность (P1 - 30)
-        # 5.4.	генератор 2 – мощность (P1 - …) (повторить с шагом 2)
-        # 5.5.	генератор 2 – мощность (P1 – 2)
-        # 5.6.	генератор 2 – частота (F5 – 0,005)
-        # 5.7.	генератор 2 – мощность (P1 - 30)
-        # 5.8.	генератор 2 – мощность (P1 - …) (повторить с шагом 2)
-        # 5.9.	генератор 2 – мощность (P1 – 2)
+        gen2.set_freq(value=f5, unit='GHz')
+
+        gen2.set_pow(value=p2, unit='dBm')
+        gen2.set_pow(value=p2, unit='dBm')
+        gen2.set_pow(value=p2, unit='dBm')
 
     @pyqtSlot(dict)
     def on_secondary_changed(self, params):

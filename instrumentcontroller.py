@@ -28,8 +28,11 @@ class InstrumentController(QObject):
                 'F7': 3.9,
                 'F8': 0.001,
                 'P1': 13,
-                'P2': 6
-            }
+                'P2': 6,
+                'level': 0,
+                'Imin': None,
+                'Imax': None
+            },
         }
 
         if isfile('./params.ini'):
@@ -87,9 +90,18 @@ class InstrumentController(QObject):
         gen1 = self._instruments['Генератор 1']
         analyzer = self._instruments['Анализатор']
 
-        source.set_current(chan=1, value=500, unit='mA')
-        source.set_voltage_limit(chan=1, value=5, unit='V')
-        source.set_output(chan=1, state='ON')
+        imin = param['Imin']
+        imax = param['Imax']
+        level = param['level']
+
+        read_curr = 0
+        if imin is not None:
+            source.set_current(chan=1, value=imax, unit='mA')
+            source.set_voltage(chan=1, value=5, unit='V')
+            source.set_output(chan=1, state='ON')
+
+            if not mock_enabled:
+                read_curr = source.read_current(chan=1)
 
         f1 = param['F1']
         gen1.set_modulation(state='OFF')
@@ -111,8 +123,7 @@ class InstrumentController(QObject):
         analyzer.set_autocalibrate(state='ON')
 
         # read_pow = -10
-
-        return read_pow > level
+        return read_pow > level and (imin < read_curr < imax) if imin is not None else True
 
     def measure(self, params):
         print(params)

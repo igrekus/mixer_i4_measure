@@ -169,7 +169,8 @@ class InstrumentController(QObject):
         gen2.set_output(state='ON')
 
         self._measure_important(param)
-        self._measure_unimportant(param)
+        if not self.secondaryParams['important']:
+            self._measure_unimportant(param)
 
         analyzer.remove_marker(marker=1)
         analyzer.set_autocalibrate(state='ON')

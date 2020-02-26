@@ -143,12 +143,20 @@ class InstrumentController(QObject):
         source.set_voltage_limit(chan=1, value=5, unit='V')
         source.set_output(chan=1, state='ON')
 
-        if dev_type in (2, 4, 5, 6):
-            max_curr = 50   # TODO table 3 missing
-            curr = float(source.query('MEAS:CURR CH1'))
-            if curr >= max_curr:
+        imin = param['Imin']
+        imax = param['Imax']
+
+        if imin is not None:
+            source.set_current(chan=1, value=imax, unit='mA')
+            source.set_voltage(chan=1, value=5, unit='V')
+            source.set_output(chan=1, state='ON')
+
+            read_curr = float(source.read_current(chan=1))
+            if mock_enabled:
+                read_curr = 10
+            if read_curr >= imax:
                 source.set_output(chan=1, state='OFF')
-                print(f'supply current {curr} is bigger than max_current {max_curr}')
+                print(f'supply current {read_curr} is bigger than max_current {imax}')
                 return None
 
         analyzer.set_autocalibrate(state='OFF')

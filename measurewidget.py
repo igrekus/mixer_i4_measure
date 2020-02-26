@@ -127,7 +127,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._params = 0
 
         self._checkOnlyImportant = QCheckBox(parent=self)
-        self._devices._layout.addRow('Только основные', self._checkOnlyImportant)
+        self._devices._layout.addRow('Только основные\nпараметры', self._checkOnlyImportant)
 
         self._connectSignals()
 

@@ -50,7 +50,7 @@ class InstrumentController(QObject):
         self.result = MeasureResultMock()
         self.found = False
         self.present = False
-        self.span = 10
+        self.span = 1
 
     def __str__(self):
         return f'{self._instruments}'

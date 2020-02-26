@@ -267,18 +267,20 @@ class InstrumentController(QObject):
         if not mock_enabled:
             time.sleep(0.5)
 
+        # прогон IIP3 по мощности
         gen1.set_freq(value=f2, unit='GHz')
         gen2.set_freq(value=f5, unit='GHz')
 
-        gen2.set_pow(value=p2, unit='dBm')
-        gen2.set_pow(value=p2, unit='dBm')
-        gen2.set_pow(value=p2, unit='dBm')
+        for gen_pow in range(start=p2 - 30, stop=(p2 - 2) + 2, step=2):
+            gen2.set_pow(value=gen_pow, unit='dBm')
+            if not mock_enabled:
+                time.sleep(0.3)
 
-        gen2.set_freq(value=f5, unit='GHz')
-
-        gen2.set_pow(value=p2, unit='dBm')
-        gen2.set_pow(value=p2, unit='dBm')
-        gen2.set_pow(value=p2, unit='dBm')
+        gen2.set_freq(value=f5 - 0.005, unit='GHz')
+        for gen_pow in range(start=p2 - 30, stop=(p2 - 2) + 2, step=2):
+            gen2.set_pow(value=gen_pow, unit='dBm')
+            if not mock_enabled:
+                time.sleep(0.3)
 
     @pyqtSlot(dict)
     def on_secondary_changed(self, params):

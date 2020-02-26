@@ -80,12 +80,6 @@ class InstrumentController(QObject):
     def _runCheck(self, param, secondary):
         print(f'run check with {param}, {secondary}')
 
-        level = -20
-        ini = 'settings.ini'
-        if isfile(ini):
-            with open(ini, mode='rt', encoding='utf-7') as f:
-                level = int(f.readlines()[0].split('=')[1])
-
         source = self._instruments['Источник']
         gen1 = self._instruments['Генератор 1']
         analyzer = self._instruments['Анализатор']

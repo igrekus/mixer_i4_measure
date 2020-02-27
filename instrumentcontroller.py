@@ -29,7 +29,8 @@ class InstrumentController(QObject):
                 'F8': 0.001,
                 'P1': 13,
                 'P2': 6,
-                'level': 0,
+                'Pcheck': -10,
+                'level': -20,
                 'Imin': None,
                 'Imax': None
             },
@@ -98,9 +99,10 @@ class InstrumentController(QObject):
                 read_curr = source.read_current(chan=1)
 
         f1 = param['F1']
+        pcheck = param['Pcheck']
         gen1.set_modulation(state='OFF')
         gen1.set_freq(value=f1, unit='GHz')
-        gen1.set_pow(value=0, unit='dBm')
+        gen1.set_pow(value=pcheck, unit='dBm')
         gen1.set_output(state='ON')
 
         analyzer.set_autocalibrate(state='OFF')
@@ -116,8 +118,12 @@ class InstrumentController(QObject):
         source.set_output(chan=1, state='OFF')
         analyzer.set_autocalibrate(state='ON')
 
+        if imin is not None:
+            pass_current = imin < read_curr < imax
+        else:
+            pass_current = True
         # read_pow = -10
-        return read_pow > level and (imin < read_curr < imax) if imin is not None else True
+        return read_pow > level and pass_current
 
     def measure(self, params):
         print(params)
@@ -151,7 +157,7 @@ class InstrumentController(QObject):
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')
 
-            read_curr = float(source.read_current(chan=1))
+            read_curr = float(source.read_current(chan=1)) * 1_000
             if mock_enabled:
                 read_curr = 10
             if read_curr >= imax:

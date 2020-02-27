@@ -36,22 +36,34 @@ class InstrumentController(QObject):
             },
         }
 
+        self.secondaryParams = {
+            'important': False,
+        }
+
+        self._instruments = dict()
+        settings = dict()
+
+        self.result = MeasureResultMock()
+        self.found = False
+        self.present = False
+        self.span = 1
+
         if isfile('./params.ini'):
             import ast
             with open('./params.ini', 'rt', encoding='utf-8') as f:
                 raw = ''.join(f.readlines())
                 self.deviceParams = ast.literal_eval(raw)
 
-        self.secondaryParams = {
-            'important': False,
-        }
+        if isfile('./settings.ini'):
+            with open('./settings.ini', 'rt', encoding='utf-8') as f:
+                for line in f.readlines():
+                    if not line:
+                        continue
+                    key, value = line.strip().split('=')
+                    settings[key] = value
 
-        self._instruments = dict()
-
-        self.result = MeasureResultMock()
-        self.found = False
-        self.present = False
-        self.span = 1
+        self.sleep_important = settings.get('important', 0.3)
+        self.sleep_unimportant = settings.get('unimportant', 0.3)
 
     def __str__(self):
         return f'{self._instruments}'
@@ -105,6 +117,9 @@ class InstrumentController(QObject):
         gen1.set_freq(value=f1, unit='GHz')
         gen1.set_pow(value=pcheck, unit='dBm')
         gen1.set_output(state='ON')
+
+        if not mock_enabled:
+            time.sleep(1)
 
         analyzer.set_autocalibrate(state='OFF')
         analyzer.set_span(value=self.span, unit='MHz')
@@ -189,6 +204,7 @@ class InstrumentController(QObject):
 
     def _measure_important(self, param):
         print('measure important')
+        sleep = self.sleep_important
         gen1 = self._instruments['Генератор 1']
         gen2 = self._instruments['Генератор 2']
         analyzer = self._instruments['Анализатор']
@@ -210,17 +226,17 @@ class InstrumentController(QObject):
         analyzer.set_measure_center_freq(value=f1, unit='GHz')
         analyzer.set_marker1_x_center(value=f1, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         analyzer.set_measure_center_freq(value=f4, unit='GHz')
         analyzer.set_marker1_x_center(value=f4, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         analyzer.set_measure_center_freq(value=f7, unit='GHz')
         analyzer.set_marker1_x_center(value=f7, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         gen1.set_freq(value=f3, unit='GHz')
         gen1.set_pow(value=p1, unit='dBm')
@@ -230,20 +246,21 @@ class InstrumentController(QObject):
         analyzer.set_measure_center_freq(value=f3, unit='GHz')
         analyzer.set_marker1_x_center(value=f3, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         analyzer.set_measure_center_freq(value=f6, unit='GHz')
         analyzer.set_marker1_x_center(value=f6, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         analyzer.set_measure_center_freq(value=f8, unit='GHz')
         analyzer.set_marker1_x_center(value=f8, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
     def _measure_unimportant(self, param):
         print('measure unimportant')
+        sleep = self.sleep_unimportant
         gen1 = self._instruments['Генератор 1']
         gen2 = self._instruments['Генератор 2']
         analyzer = self._instruments['Анализатор']
@@ -267,12 +284,12 @@ class InstrumentController(QObject):
         analyzer.set_measure_center_freq(value=f5, unit='GHz')
         analyzer.set_marker1_x_center(value=f5, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         analyzer.set_measure_center_freq(value=f2, unit='GHz')
         analyzer.set_marker1_x_center(value=f2, unit='GHz')
         if not mock_enabled:
-            time.sleep(0.5)
+            time.sleep(sleep)
 
         # прогон IIP3 по мощности
         analyzer.set_measure_center_freq(value=f5, unit='GHz')
@@ -297,7 +314,7 @@ class InstrumentController(QObject):
         for gen_pow in range(p2 - 30, (p2 - 2) + 2, 2):
             gen2.set_pow(value=gen_pow, unit='dBm')
             if not mock_enabled:
-                time.sleep(0.3)
+                time.sleep(sleep)
 
     @pyqtSlot(dict)
     def on_secondary_changed(self, params):

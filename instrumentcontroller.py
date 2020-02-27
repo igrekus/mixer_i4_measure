@@ -62,8 +62,8 @@ class InstrumentController(QObject):
                     key, value = line.strip().split('=')
                     settings[key] = value
 
-        self.sleep_important = settings.get('important', 0.3)
-        self.sleep_unimportant = settings.get('unimportant', 0.3)
+        self.sleep_important = float(settings.get('important', '0.3'))
+        self.sleep_unimportant = float(settings.get('unimportant', '0.3'))
 
     def __str__(self):
         return f'{self._instruments}'
@@ -168,6 +168,7 @@ class InstrumentController(QObject):
         imax = param['Imax']
 
         if imin is not None:
+            source.send(f'DISPlay:WIND1:TEXT "REMOTE"')
             source.set_current(chan=1, value=imax, unit='mA')
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')

@@ -91,12 +91,13 @@ class InstrumentController(QObject):
 
         read_curr = 0
         if imin is not None:
+            source.send(f'DISPlay:WIND1:TEXT "REMOTE"')
             source.set_current(chan=1, value=imax, unit='mA')
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')
 
             if not mock_enabled:
-                read_curr = source.read_current(chan=1)
+                read_curr = float(source.read_current(chan=1)) * 1_000
 
         f1 = param['F1']
         pcheck = param['Pcheck']
@@ -174,15 +175,16 @@ class InstrumentController(QObject):
         gen2.set_modulation(state='OFF')
         gen2.set_output(state='ON')
 
-        self._measure_important(param)
+        for _ in range(5):
+            self._measure_important(param)
         if not self.secondaryParams['important']:
-            self._measure_unimportant(param)
+            for _ in range(5):
+                self._measure_unimportant(param)
 
-        analyzer.remove_marker(marker=1)
-        analyzer.set_autocalibrate(state='ON')
-        gen1.set_output(state='OFF')
-        gen2.set_output(state='OFF')
-        source.set_output(chan=1, state='OFF')
+        analyzer.send('*RST')
+        gen1.send('*RST')
+        gen2.send('*RST')
+        source.send('*RST')
 
         return [1]
 
@@ -274,16 +276,26 @@ class InstrumentController(QObject):
             time.sleep(0.5)
 
         # прогон IIP3 по мощности
+        analyzer.set_measure_center_freq(value=f5, unit='GHz')
+        analyzer.set_marker1_x_center(value=f5, unit='GHz')
+        if not mock_enabled:
+            time.sleep(sleep)
+
         gen1.set_freq(value=f2, unit='GHz')
         gen2.set_freq(value=f5, unit='GHz')
 
-        for gen_pow in range(start=p2 - 30, stop=(p2 - 2) + 2, step=2):
+        for gen_pow in range(p2 - 30, (p2 - 2) + 2, 2):
             gen2.set_pow(value=gen_pow, unit='dBm')
             if not mock_enabled:
-                time.sleep(0.3)
+                time.sleep(sleep)
+
+        analyzer.set_measure_center_freq(value=f5 - 0.005, unit='GHz')
+        analyzer.set_marker1_x_center(value=f5 - 0.005, unit='GHz')
+        if not mock_enabled:
+            time.sleep(sleep)
 
         gen2.set_freq(value=f5 - 0.005, unit='GHz')
-        for gen_pow in range(start=p2 - 30, stop=(p2 - 2) + 2, step=2):
+        for gen_pow in range(p2 - 30, (p2 - 2) + 2, 2):
             gen2.set_pow(value=gen_pow, unit='dBm')
             if not mock_enabled:
                 time.sleep(0.3)

@@ -11,10 +11,10 @@ class InstrumentController(QObject):
         super().__init__(parent=parent)
 
         self.requiredInstruments = {
-            'Источник': SourceFactory('GPIB0::9::INSTR'),
-            'Генератор 1': GeneratorFactory('GPIB0::10::INSTR'),
-            'Генератор 2': GeneratorFactory('GPIB0::11::INSTR'),
-            'Анализатор': AnalyzerFactory('GPIB0::12::INSTR'),
+            'Источник': SourceFactory('GPIB0::5::INSTR'),
+            'Генератор 1': GeneratorFactory('GPIB0::19::INSTR'),
+            'Генератор 2': GeneratorFactory('GPIB0::6::INSTR'),
+            'Анализатор': AnalyzerFactory('GPIB0::18::INSTR'),
         }
 
         self.deviceParams = {

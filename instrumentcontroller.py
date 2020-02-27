@@ -1,3 +1,4 @@
+import ast
 import time
 from os.path import isfile
 from PyQt5.QtCore import QObject, pyqtSlot
@@ -49,10 +50,14 @@ class InstrumentController(QObject):
         self.span = 1
 
         if isfile('./params.ini'):
-            import ast
             with open('./params.ini', 'rt', encoding='utf-8') as f:
                 raw = ''.join(f.readlines())
                 self.deviceParams = ast.literal_eval(raw)
+
+        if isfile('./instr.ini'):
+            with open('./instr.ini', 'rt', encoding='utf-8') as f:
+                raw = ''.join(f.readlines())
+                self.requiredInstruments = eval(raw)
 
         if isfile('./settings.ini'):
             with open('./settings.ini', 'rt', encoding='utf-8') as f:

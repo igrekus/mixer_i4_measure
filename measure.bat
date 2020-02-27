@@ -1,1 +1,1 @@
-python measure.py
+start /MIN measure.exe

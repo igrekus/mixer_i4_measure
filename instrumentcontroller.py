@@ -127,7 +127,6 @@ class InstrumentController(QObject):
         return read_pow > level and pass_current
 
     def measure(self, params):
-        print(params)
         print(f'call measure with {params}')
         device, secondary = params
         res = self._measure(device, secondary)

@@ -195,7 +195,7 @@ class InstrumentController(QObject):
             self._measure_important(param)
         if not self.secondaryParams['important']:
             for _ in range(5):
-                self._measure_unimportant(param)
+                self._measure_unimportant(param, dev_type)
 
         analyzer.send('*RST')
         gen1.send('*RST')
@@ -260,7 +260,7 @@ class InstrumentController(QObject):
         if not mock_enabled:
             time.sleep(sleep)
 
-    def _measure_unimportant(self, param):
+    def _measure_unimportant(self, param, dev_type):
         print('measure unimportant')
         sleep = self.sleep_unimportant
         gen1 = self._instruments['Генератор 1']
@@ -277,7 +277,10 @@ class InstrumentController(QObject):
         f8 = param['F8']
         p1 = param['P1']
         p2 = param['P2']
+        att = param['att']
 
+        analyzer.send(f':POW:ATT {att}dB')
+            
         gen1.set_freq(value=f2, unit='GHz')
         gen1.set_pow(value=p1, unit='dBm')
         gen2.set_freq(value=f5, unit='GHz')

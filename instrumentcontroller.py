@@ -165,10 +165,6 @@ class InstrumentController(QObject):
         gen2 = self._instruments['Генератор 2']
         analyzer = self._instruments['Анализатор']
 
-        source.set_current(chan=1, value=500, unit='mA')
-        source.set_voltage_limit(chan=1, value=5, unit='V')
-        source.set_output(chan=1, state='ON')
-
         imin = param['Imin']
         imax = param['Imax']
 

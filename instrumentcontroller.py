@@ -280,7 +280,7 @@ class InstrumentController(QObject):
         att = param['att']
 
         analyzer.send(f':POW:ATT {att}dB')
-            
+
         gen1.set_freq(value=f2, unit='GHz')
         gen1.set_pow(value=p1, unit='dBm')
         gen2.set_freq(value=f5, unit='GHz')

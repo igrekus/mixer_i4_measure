@@ -114,6 +114,7 @@ class InstrumentController(QObject):
             source.set_output(chan=1, state='ON')
 
             if not mock_enabled:
+                time.sleep(0.5)
                 read_curr = float(source.read_current(chan=1)) * 1_000
 
         f1 = param['F1']
@@ -174,6 +175,8 @@ class InstrumentController(QObject):
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')
 
+            if not mock_enabled:
+                time.sleep(0.5)
             read_curr = float(source.read_current(chan=1)) * 1_000
             if mock_enabled:
                 read_curr = 10

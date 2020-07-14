@@ -108,7 +108,7 @@ class InstrumentController(QObject):
 
         read_curr = 0
         if imin is not None:
-            source.send(f'DISPlay:WIND1:TEXT "REMOTE"')
+            source.send(f'DISPlay:WIND:TEXT "REMOTE"')
             source.set_current(chan=1, value=imax, unit='mA')
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')
@@ -171,7 +171,7 @@ class InstrumentController(QObject):
         att = param['att']
 
         if imin is not None:
-            source.send(f'DISPlay:WIND1:TEXT "REMOTE"')
+            source.send(f'DISPlay:WIND:TEXT "REMOTE"')
             source.set_current(chan=1, value=imax, unit='mA')
             source.set_voltage(chan=1, value=5, unit='V')
             source.set_output(chan=1, state='ON')

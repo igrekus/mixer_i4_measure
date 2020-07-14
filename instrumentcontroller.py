@@ -168,6 +168,7 @@ class InstrumentController(QObject):
 
         imin = param['Imin']
         imax = param['Imax']
+        att = param['att']
 
         if imin is not None:
             source.send(f'DISPlay:WIND1:TEXT "REMOTE"')
@@ -188,6 +189,7 @@ class InstrumentController(QObject):
         analyzer.set_autocalibrate(state='OFF')
         analyzer.set_span(value=self.span, unit='MHz')
         analyzer.set_marker_mode(marker=1, mode='POS')
+        analyzer.send(f':POW:ATT {att}dB')
 
         gen1.set_modulation(state='OFF')
         gen1.set_output(state='ON')
@@ -280,9 +282,6 @@ class InstrumentController(QObject):
         f8 = param['F8']
         p1 = param['P1']
         p2 = param['P2']
-        att = param['att']
-
-        analyzer.send(f':POW:ATT {att}dB')
 
         gen1.set_freq(value=f2, unit='GHz')
         gen1.set_pow(value=p1, unit='dBm')
